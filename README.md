@@ -1,3 +1,62 @@
+-- =============================================
+-- Executor Detection & Xeno Support
+-- =============================================
+local ExecutorName = "Unknown"
+
+local function isXeno()
+    if typeof(XENOEXEC) ~= "nil" then return true end
+    if identifyexecutor and string.lower(tostring(identifyexecutor())):find("xeno") then return true end
+    local ok, result = pcall(function()
+        return getgenv().__XENOEXECUTOR__ ~= nil
+    end)
+    if ok and result then return true end
+    return false
+end
+
+pcall(function()
+    if identifyexecutor then
+        ExecutorName = tostring(identifyexecutor())
+    end
+    if isXeno() then
+        ExecutorName = "Xeno"
+    end
+end)
+
+local _isXeno = pcall(isXeno) and isXeno()
+
+-- No Xeno, sobrescreve BTP para teleporte direto mais estável
+if _isXeno then
+    ExecutorName = "Xeno"
+    function BTP(P)
+        pcall(function()
+            local char = game.Players.LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") then
+                char.Humanoid:ChangeState(11) -- Jumping state para evitar anticheat
+                char.HumanoidRootPart.CFrame = P
+                task.wait(0.05)
+                char.HumanoidRootPart.CFrame = P
+            end
+        end)
+    end
+    function TP1(Pos)
+        pcall(function()
+            local char = game.Players.LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                char.HumanoidRootPart.CFrame = Pos
+            end
+        end)
+    end
+    function TP(Pos)
+        pcall(function()
+            local char = game.Players.LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                char.HumanoidRootPart.CFrame = Pos
+            end
+        end)
+    end
+end
+-- =============================================
+
 if game.PlaceId == 2753915549 then
     World1 = true
 elseif game.PlaceId == 4442272183 then
@@ -2628,6 +2687,7 @@ W:AddLabel("[+] KZ Hub is HERE!")
 W:AddLabel("[+] Best AutoFarm!")
 W:AddLabel("[+] Up and Growing")
 W:AddLabel("[+] Smooth")
+W:AddLabel("[+] Executor: " .. (ExecutorName or "Unknown"))
 
 local Section = W:AddSection({
     Name = "Status"
